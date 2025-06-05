@@ -1,0 +1,443 @@
+/* =================  变量  ================= */
+:root{
+  --env-blue:#8fb7e6;
+  --env-blue-dark:#6793c5;
+  --stone:#c8c5c1;
+  --rose:#c5a3a0;
+  --paper:#e5e3df;
+  --ink:#343434;
+
+  --size:300px;   /* 礼盒边长 */
+  --ribbon:20px;  /* 丝带宽 */
+
+  /* Variables for our styled cake */
+  --styled-cake-radius: 70px; /* 蛋糕半径 */
+  --styled-cake-height: 55px; /* 蛋糕高度 */
+
+  /* Cake Colors */
+  --plate:#f7f7f7;      /* 盘子颜色 (如果需要) */
+  --sponge:#f6d9c8;    /* 海绵蛋糕体颜色 */
+  --cream :#fff2ec;    /* 奶油/糖霜颜色 */
+  --strawberry:#e43d3d; /* 草莓颜色 */
+  --candle:#fff;       /* 蜡烛颜色 (如果需要) */
+  --flame :#ffce54;     /* 火焰颜色 (如果需要) */
+
+  --noise:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNk+M+ACzCEAAGLAACSSQ0ckKoXAAAAAElFTkSuQmCC");
+}
+
+/* ========== Reset & 布局 ========== */
+*{margin:0;padding:0;box-sizing:border-box;}
+/* style.css 文件中的 body 规则修改如下进行测试 */
+body {
+  /* 只保留这几行用于背景图显示 */
+  background-image: url('../image/background.png'); /* 直接使用路径 */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* 如果不希望滚动，可以保留 */
+
+  /* 其他原有属性暂时注释掉，看看是否是它们的影响 */
+  /* font-family: 'Playfair Display', serif; */
+  height: 100vh;
+  overflow: hidden;
+  /* display: flex; */
+  /* align-items: center; */
+  /* justify-content: center; */
+
+  /* 不设置 background-color，让图片决定一切 */
+}
+.stage{position:absolute;inset:0;display:none;align-items:center;justify-content:center;}
+.stage.active{display:flex;}
+
+/* ===== 信封（保持不变） ===== */
+.envelope{width:70vw;max-width:800px;height:45vh;max-height:420px;position:relative;
+  background:var(--env-blue-dark);box-shadow:0 8px 20px rgba(0,0,0,.25);}
+.flap{position:absolute;top:0;left:0;width:100%;height:60%;background:var(--env-blue);
+  clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;
+  animation:flap-close .9s forwards;box-shadow:0 4px 6px rgba(0,0,0,.25);}
+@keyframes flap-close{from{transform:rotateX(-165deg);}to{transform:rotateX(0);} }
+@keyframes flap-open {from{transform:rotateX(0);}    to{transform:rotateX(-165deg);} }
+.body{position:absolute;bottom:0;width:100%;height:70%;display:flex;justify-content:flex-end;align-items:flex-end;padding:2.5rem;}
+.signature{width:220px;height:56px;outline:none;border-bottom:3px dashed rgba(255,255,255,.8);
+  font-family:'Gloria Hallelujah',cursive;font-size:2.4rem;color:#fff;}
+.signature:empty:before{content:attr(data-placeholder);opacity:.6;}
+
+/* ===== 礼盒（顶面蝴蝶结、俯视角） ===== */
+.scene{perspective:1200px;}
+.gift-box{width:var(--size);height:var(--size);position:relative;transform-style:preserve-3d;
+  transform:rotateX(-35deg) rotateY(20deg);}
+.face{position:absolute;width:var(--size);height:var(--size);background:var(--stone);
+  border:2px solid rgba(0,0,0,.06);box-shadow:inset 0 0 6px rgba(0,0,0,.08);}
+/* 让所有侧板都以“底边”为铰链 */
+.front,.back,.left,.right{
+  transform-origin:bottom center;
+  transition:transform .8s cubic-bezier(.6,-0.4,.3,1.4);
+}
+
+/* ---- 顶盖 (lid) ---- */
+.top{
+  cursor:grab;                                  /* 手势 */
+  transform:rotateX(90deg) translateZ(calc(var(--size)/2));
+  transition:transform .3s ease, opacity .3s;
+  background:
+      linear-gradient(to right,var(--rose) 0 var(--ribbon),transparent var(--ribbon) calc(50% - var(--ribbon)/2),
+                      var(--rose) calc(50% - var(--ribbon)/2) calc(50% + var(--ribbon)/2),
+                      transparent calc(50% + var(--ribbon)/2) calc(100% - var(--ribbon)),
+                      var(--rose) calc(100% - var(--ribbon)) 100%),
+      linear-gradient(to bottom,var(--rose) 0 var(--ribbon),transparent var(--ribbon) calc(50% - var(--ribbon)/2),
+                      var(--rose) calc(50% - var(--ribbon)/2) calc(50% + var(--ribbon)/2),
+                      transparent calc(50% + var(--ribbon)/2) calc(100% - var(--ribbon)),
+                      var(--rose) calc(100% - var(--ribbon)) 100%),
+      var(--stone);
+}
+/* 拖拽中手势变抓取 */
+.top.dragging{cursor:grabbing;transition:none;}
+
+/* 移除后飞走 + 淡出 */
+.top.removed{
+  pointer-events:none;
+  transform:rotateX(90deg) translateZ(calc(var(--size)/2 + 220px));
+  opacity:.3;
+}
+
+.top::before,.top::after{content:'';position:absolute;background:var(--rose);width:60px;height:40px;top:50%;left:50%;
+  box-shadow:inset -3px -3px 5px rgba(0,0,0,.12);}
+.top::before{border-radius:50% 50% 0 50%/60% 60% 0 60%;transform:translate(-100%,-50%) rotate(-20deg);}
+.top::after {border-radius:50% 50% 50% 0/60% 60% 60% 0;transform:translate(0,-50%) rotate(20deg);}
+.top::after+.knot{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:26px;height:26px;border-radius:50%;background:var(--rose);box-shadow:inset -3px -3px 5px rgba(0,0,0,.1);}
+.bottom{transform:rotateX(-90deg) translateZ(calc(var(--size)/2));}
+/* ---- front (可手动下翻) ---- */
+.front{
+  /* 初始仍是直立在盒子前侧 */
+  transform:translateZ(calc(var(--size)/2));
+  transform-origin:bottom center;                 /* 以底边为铰链 */
+  transition:transform .8s cubic-bezier(.6,-0.4,.3,1.4);
+}
+/* 打开：下翻 90° 并微微移到盒子外 */
+.front.open{
+  transform:
+    translateZ(calc(var(--size)/2))               /* 仍保持 Z 位置 */
+    rotateX(-90deg);                               /* 绕 X 轴正方向翻到水平 */
+}
+
+/* 侧板打开状态：一律向外翻 90°（沿底边）*/
+.front.open {
+  /* 正面：垂直 → 朝外水平 */
+  transform:translateZ(calc(var(--size)/2)) rotateX(-90deg);
+}
+
+.back.open  {
+  /* 背面：已 rotateY(180deg) 反向，仍用 -90° */
+  transform:rotateY(180deg) translateZ(calc(var(--size)/2)) rotateX(-90deg);
+}
+
+/* ---- 左侧 (.left.open)  ----
+   初始：rotateY(-90deg)  translateZ(...)
+   目标：绕底边（深度方向）翻到水平朝外
+   → 在现有基础上继续  rotateX( 90deg)  */
+.left.open{
+  transform:
+    rotateY(-90deg)
+    translateZ(calc(var(--size)/2))
+    rotateX(-90deg); /* 保持与其它面打开方向一致，都向外倒 */
+}
+
+/* ---- 右侧 (.right.open) ----
+   初始：rotateY( 90deg) ...
+   目标：沿底边向外翻，同理用  rotateX(-90deg)  */
+.right.open{
+  transform:
+    rotateY(90deg)
+    translateZ(calc(var(--size)/2))
+    rotateX(-90deg); /* 保持与其它面打开方向一致，都向外倒 */
+}
+
+.back  {transform:rotateY(180deg) translateZ(calc(var(--size)/2));}
+.left  {transform:rotateY(-90deg)  translateZ(calc(var(--size)/2));}
+.right {transform:rotateY( 90deg)  translateZ(calc(var(--size)/2));}
+.front,.back,.left,.right{background:linear-gradient(to bottom,var(--rose) 0 var(--ribbon),transparent var(--ribbon) calc(50% - var(--ribbon)/2),
+            var(--rose) calc(50% - var(--ribbon)/2) calc(50% + var(--ribbon)/2),
+            transparent calc(50% + var(--ribbon)/2) 100%),var(--stone);}
+
+
+/* ================= 蛋糕图片样式 ================= */
+/* 原全局 .cake 样式已被移除或修改为针对 .gift-box 内部的蛋糕 */
+
+/* 针对在 .gift-box 内部的蛋糕容器的样式 */
+.gift-box .cake {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(
+    calc(-50% - 40px),
+    calc( (var(--size) / 2) - (var(--styled-cake-height) / 2) - 270px ),
+    95px 
+  )
+  rotateX(5deg)  /* 向前倾斜5度 */
+  rotateY(-22deg) /* 向右旋转15度 */
+  /* rotateZ(0deg) -- 如果不需要Z轴旋转可以不写 */
+  ;
+  width: auto;
+  height: auto;
+}
+
+/* 蛋糕图片的样式 (通常不需要为位置和旋转修改这里，除非要改变图片本身的尺寸) */
+.cake-image {
+  width: 300px;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  /* filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); */
+  border-radius: 8px;
+  display: block;
+}
+
+/* ================= Base Cake Tier Styles (Cylinder) ================= */
+/* 这部分是之前存在的3D蛋糕体基础样式，虽然当前主要用图片蛋糕，但保留原样 */
+.tier {
+  position: absolute;
+  transform-style: preserve-3d;
+  /* --r and --h are expected to be defined by specific tier instances like .cake-tier-styled */
+}
+
+.tier .side {
+  position: absolute;
+  width: calc(var(--r) * 2); /* Diameter */
+  height: var(--h);
+  background: var(--sponge);
+  left: calc(var(--r) * -1);
+  top: calc(var(--h) / -2);
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.15),
+              0 5px 10px rgba(0,0,0,0.1);
+  border-radius: 3px;
+}
+
+.tier .top { /* This is the circular top face element */
+  position: absolute;
+  width: calc(var(--r) * 2); /* Diameter */
+  height: calc(var(--r) * 2); /* Diameter (it's a circle) */
+  background: var(--cream);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  /* The transform to position it on top of the cake body
+     is handled by the specific class .cake-tier-styled .top for this cake. */
+}
+            
+/* ===== 留声机 ===== */
+.vinyl-player{position:absolute;top:20px;right:20px;width:200px;height:200px;background:#5d4037;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;padding:20px;box-shadow:0 10px 20px rgba(0,0,0,.3);}
+.turntable{width:150px;height:150px;background:#3e2723;border-radius:50%;position:relative;overflow:hidden;}
+.record-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:14px;height:14px;border-radius:50%;background:#eee;}
+.arm{width:80px;height:6px;background:#d7ccc8;border-radius:3px;position:absolute;right:-10px;top:32px;
+  transform:rotate(25deg);transform-origin:right center;transition:transform .4s ease;z-index:10;}
+.needle{width:12px;height:12px;background:#d7ccc8;border-radius:50%;position:absolute;right:-6px;top:-3px;}
+.controls-player{margin-top:1rem;}
+.control-button{background:#a1887f;color:#fff;border:none;padding:4px 8px;margin:0 4px;border-radius:4px;cursor:pointer;}
+@keyframes spin{to{transform:rotate(360deg);} }
+.playing .arm{transform:rotate(3deg);} /* 落针 */
+
+/* ===== 黑胶唱片托盘 ===== */
+.disk-tray{position:absolute;top:20px;right:240px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.disk{width:80px;height:80px;border-radius:50%;cursor:grab;user-select:none;
+  background:radial-gradient(circle,#000 0 30%,transparent 30% 34%,#000 34% 38%,transparent 38% 42%,#000 42%),#111;
+  box-shadow:inset 0 0 6px rgba(255,255,255,.04),0 4px 8px rgba(0,0,0,.3);
+  transition:opacity .2s;}
+.disk.dragging{opacity:0;}         /* 拖动时本体淡出 */
+.disk.hidden{visibility:hidden;}   /* 播放中占位，但不显示 */
+.disk-label{margin-top:6px;font-family:'Gloria Hallelujah',cursive;font-size:.8rem;color:#f3f3f3;
+  text-align:center;display:block;pointer-events:none;}
+
+/* 转盘上的唱片 */
+.table-disk{width:120px;height:120px;border-radius:50%;position:absolute;top:15px;left:15px;z-index:1;
+  background:radial-gradient(circle,#000 0 30%,transparent 30% 34%,#000 34% 38%,transparent 38% 42%,#000 42%),#111;
+  animation:spin 6s linear infinite;}
+/* 注意：确保这里没有多余的右花括号 } */
+
+/* ================= Fireworks Styles ================= */
+.fireworks-container {
+    position: fixed; /* 覆盖整个屏幕 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 允许点击穿透到后面的元素 */
+    z-index: 9999; /* 确保在最顶层 */
+    overflow: hidden; /* 粒子不应导致滚动条 */
+}
+
+@keyframes burst {
+    0% {
+        transform: translate(0, 0) scale(0.5); /* 开始时可以略大一点或者保持0.5 */
+        opacity: 1;
+    }
+    /* 20% { 
+        opacity: 1; /* 可以移除或调整这一帧，让不透明度变化更平滑或更剧烈 */
+    /* } */
+    70% { /* 动画的主要阶段，保持较高不透明度和大小 */
+        transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(1.2); /* 扩散时可以稍微放大一点 */
+        opacity: 0.9; /* 保持较高的不透明度 */
+    }
+    100% {
+        transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(0.3); /* 消失时缩小 */
+        opacity: 0;
+    }
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 1; 
+    
+    /* 尝试这种 box-shadow 组合 */
+    box-shadow: 
+        /* 核心白光，更亮更集中 */
+        0 0 3px 1px rgba(255, 255, 255, 0.9), /* 接近纯白的、略微透明的辉光 */
+        /* 粒子自身颜色的辉光，模糊半径稍大，扩展半径稍小，颜色也可以提亮 */
+        /* 使用 filter: brightness(1.5) 或直接用更亮的同色系颜色可能更好，但CSS box-shadow不支持直接的filter */
+        /* 所以我们让currentColor的辉光更柔和，主要靠白色辉光提亮 */
+        0 0 8px 1px currentColor, /* 稍微柔和的彩色辉光 */
+        0 0 12px 2px rgba(255, 255, 255, 0.5); /* 再加一层更弥散的白色光晕 */
+}
+
+/* ================= Effect Containers General Style ================= */
+.effect-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 允许点击穿透 */
+    z-index: 9990; /* 比烟花低一点，但仍然很高 */
+    overflow: hidden;
+    opacity: 0; /* 初始透明 */
+    transition: opacity 0.5s ease-out; /* 淡入淡出效果 */
+}
+.effect-container.active {
+    opacity: 1;
+}
+
+
+/* ===== Rain & GIF – visual effects v2 ===== */
+.effect-layer{
+  pointer-events:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  overflow:hidden;
+  opacity:0;
+  transition:opacity .6s ease;
+}
+.effect-layer.active{opacity:1}
+
+/* —— Rain —— */
+.raindrop{
+  position:absolute;
+  top:-10vh;
+  width:2px;
+  height:15vh;
+  /* 上淡下浓：最底部不透明，越往上越淡 */
+background:linear-gradient(to top,
+            rgba(255,255,255,.9) 0%,
+            rgba(255,255,255,.4) 70%,
+            rgba(255,255,255,0) 100%);
+
+  border-radius:1px;
+  filter:blur(.3px);
+  animation:raindrop-fall var(--spd,.8s) linear forwards;
+}
+@keyframes raindrop-fall{to{transform:translateY(120vh)}}
+
+/* —— GIF ball —— */
+.gif-bouncer{
+  position:absolute;
+  width:80px;
+  height:80px;
+  will-change:transform;
+  pointer-events:none;
+  visibility:hidden;           /* 等载入成功再显示，避免破图框 */
+}
+
+
+/* --- FIX: unify effect-container / effect-layer & be sure they can fade in --- */
+.effect-container,
+.effect-layer{
+    pointer-events:none;
+    position:fixed;
+    inset:0;
+    z-index:9998;            /* 烟花 9999，二者略低即可 */
+    overflow:hidden;
+    opacity:0;
+    transition:opacity .6s ease;
+}
+.effect-container.active,
+.effect-layer.active{
+    opacity:1;
+}
+
+
+
+
+
+
+
+
+/* ===== Heart & Fight extra visuals (APPEND‑ONLY) ===== */
+.heart-float,
+.fight-icon{
+    position:fixed;
+    pointer-events:none;
+    user-select:none;
+    z-index:9996;   /* 低于烟花(9999)高于 GIF(9995) */
+}
+.heart-float{
+    width:60px;
+    height:auto;
+    left:50%;
+    transform:translateX(-50%);
+}
+.fight-icon{
+    width:320px;
+    top: 240px;
+    left:240px;
+    transition:opacity .3s ease;
+}
+
+/* --- 覆盖图层顺序：heart 始终在 fight 之上 --- */
+.heart-float{ z-index: 9998; }   /* 比 fight 高一层即可 */
+.fight-icon { z-index: 9997; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === Sans fight iframe overlay === */
+#sansFrameWrap{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.8);
+    z-index:9999;               /* 最高，压过烟花 */
+}
+#sansFrameWrap iframe{
+    width:640px; height:480px;
+    border:none;
+}
+

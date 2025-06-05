@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namgnal · Surprise</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <section id="stage-envelope" class="stage active">
+    <div class="envelope">
+      <div class="flap"></div>
+      <div class="body">
+        <div id="signature" class="signature" contenteditable="true"
+             spellcheck="false" data-placeholder="Sign Here"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stage-gift" class="stage">
+      <div class="scene">
+        <div class="gift-box">
+          <div class="face top"></div>
+          <div class="face bottom"></div>
+          <div class="face front"></div>
+          <div class="face back"></div>
+          <div class="face left"></div>
+          <div class="face right"></div>
+
+          <div class="cake">
+              <img src="image/cake.png" alt="Birthday Cake" class="cake-image">
+          </div>
+        </div>
+      </div>
+
+      <div class="vinyl-player" id="vinylPlayer">
+          <div class="turntable">
+              <div class="record" id="record"></div>
+              <div class="record-center"></div>
+              <div class="arm" id="arm"><div class="needle"></div></div>
+          </div>
+          <div class="controls-player">
+              <button class="control-button" id="play">▶</button>
+              <button class="control-button" id="pause">❚❚</button>
+          </div>
+          <audio id="audio" src="music/Dear Mr. F.mp3" preload="auto"></audio>
+      </div>
+      
+      <div id="diskTray" class="disk-tray">
+        <div class="disk" draggable="true" data-src="music/Dear Mr. F Nijika ver4.mp3">
+            <span class="disk-label">Rain&nbsp;mood</span>
+        </div>
+        <div class="disk" draggable="true" data-src="music/結束バンド - ギターと孤独と蒼い惑星.mp3">
+            <span class="disk-label">Bocchi&nbsp;ababa</span>
+        </div>
+        <div class="disk" draggable="true" data-src="music/MEGALOVANIA.mp3">
+            <span class="disk-label">MAGALOVNIA</span>
+        </div>
+    </div>
+    
+  </section>
+
+  <div id="fireworks-container" class="fireworks-container" style="display: none;"></div>
+
+  <div id="fireworks-container" class="fireworks-container" style="display: none;"></div>
+
+  <div id="rain-container" class="effect-container" style="display: none;">
+    </div>
+
+  <div id="gif-fall-container" class="effect-container" style="display: none;">
+    </div>
+
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>
